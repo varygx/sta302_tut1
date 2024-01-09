@@ -1,0 +1,100 @@
+---
+title: "Simulating the Canadian Election"
+author: "Allen Uy 1008462600"
+date: "1/8/2024"
+format: pdf
+---
+
+Repo link: [https://github.com/varygx/sta302_tut1](https://github.com/varygx/sta302_tut1")
+
+This Quarto document simulates a Canadian election by randomly choosing one of six parties with equal probability for each seat. We later process the results of the 2021 Federal Election. Simply run the code in each section sequentially. Since this is for the first tutorial I left the R source code in the pdf.
+
+## Install Libraries if needed
+
+```{r, message=FALSE}
+install.packages("tidyverse")
+install.packages("janitor")
+```
+
+## Load Libraries
+
+```{r, message=FALSE}
+library("tidyverse")
+library("janitor")
+```
+
+## Simulated Data
+
+```{r}
+parties = c("Liberal", "Conservative", "Bloc Québécois", 
+            "New Democratic", "Green", "Other")
+
+set.seed(42)
+
+num_seats = 338
+
+simulated_data = tibble(
+  riding = 1:num_seats,
+  party = sample(parties, num_seats, replace=TRUE)
+)
+
+head(simulated_data)
+tail(simulated_data)
+```
+
+## Load and Clean Real Dataset
+
+This is the actual data from Elections Canada for the 2021 Federal Election. We first read the CSV and clean the names. We then select the two relevant columns being the seat and elected candidate. The elected candidate also includes their party, where it is simple to obtain the French name of the party since it is separated by a /. We finish by mapping the French party name back to the English name.
+
+```{r, message=FALSE}
+raw_elections_data <- read_csv("table_tableau11.csv")
+```
+
+```{r}
+cleaned_elections_data <- clean_names(raw_elections_data)
+
+cleaned_elections_data <- cleaned_elections_data |> select(
+  electoral_district_name_nom_de_circonscription,
+  elected_candidate_candidat_elu
+) |> rename (
+  seat = electoral_district_name_nom_de_circonscription,
+  elected_candidate = elected_candidate_candidat_elu
+)
+
+cleaned_elections_data <-
+  cleaned_elections_data |>
+  separate(
+    col = elected_candidate,
+    into = c("Other", "party"),
+    sep = "/"
+  ) |>
+  select(-Other)
+
+cleaned_elections_data <- cleaned_elections_data |>
+  mutate(
+    party = case_when(
+      party == "Libéral" ~ "Liberal",
+      party == "Conservateur" ~ "Conservative",
+      party == "Bloc Québécois" ~ "Bloc Québécois",
+      party == "NPD-Nouveau Parti démocratique" ~ "New Democratic",
+      party == "Parti Vert" ~ "Green",
+      TRUE ~ "Other"
+    )
+  )
+
+head(cleaned_elections_data)
+```
+
+## References
+
+```{r, echo=FALSE, message=FALSE, output=FALSE}
+citation()
+citation("tidyverse")
+citation("janitor")
+```
+
+Firke S (2023). \_janitor: Simple Tools for Examining and Cleaning Dirty Data\_. R package version 2.2.0, https://sfirke.github.io/janitor/, \<https://github.com/sfirke/janitor\>.
+
+R Core Team (2023). \_R: A Language and Environment for Statistical Computing\_. R Foundation for Statistical Computing, Vienna, Austria. \<https://www.R-project.org/\>.
+
+Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). \"Welcome to the tidyverse.\" \_Journal of Open Source Software\_, \*4\*(43), 1686. doi:10.21105/joss.01686 \<https://doi.org/10.21105/joss.01686\>.\
