@@ -1,24 +1,30 @@
 ---
-title: "Simulating the Canadian Election"
+title: "Exploring the 2021 Canadian Election"
 author: "Allen Uy 1008462600"
-date: "1/8/2024"
 format: pdf
 ---
 
-Repo link: [https://github.com/varygx/sta302_tut1](https://github.com/varygx/sta302_tut1")
+```{r}
+#### Preamble ####
+# Purpose: Read in data from the 2021 Canadian Election and make
+# a simulation of an election
+# Author: Allen Uy
+# Email: allen.uy@mail.utoronto.ca
+# Date: 9 January 2024
+# Prerequisites: Know where to get Canadian elections data.
+```
+
+Repo link: [https://github.com/varygx/sta302_tut1](https://github.com/varygx/sta302_tut1%22)
 
 This Quarto document simulates a Canadian election by randomly choosing one of six parties with equal probability for each seat. We later process the results of the 2021 Federal Election. Simply run the code in each section sequentially. Since this is for the first tutorial I left the R source code in the pdf.
-
-## Install Libraries if needed
-
-```{r, message=FALSE}
-install.packages("tidyverse")
-install.packages("janitor")
-```
 
 ## Load Libraries
 
 ```{r, message=FALSE}
+#### Workspace setup ####
+# install.packages("tidyverse")
+# install.packages("janitor")
+
 library("tidyverse")
 library("janitor")
 ```
@@ -37,9 +43,16 @@ simulated_data = tibble(
   riding = 1:num_seats,
   party = sample(parties, num_seats, replace=TRUE)
 )
+```
 
-head(simulated_data)
-tail(simulated_data)
+## Graph of Simulated Data
+
+```{r}
+simulated_data |>
+  ggplot(aes(x=party)) +
+  geom_bar() +
+  theme_minimal() +
+  labs(x = "Party", y = "Number of seats")
 ```
 
 ## Load and Clean Real Dataset
@@ -72,17 +85,26 @@ cleaned_elections_data <-
 
 cleaned_elections_data <- cleaned_elections_data |>
   mutate(
-    party = case_when(
-      party == "Libéral" ~ "Liberal",
-      party == "Conservateur" ~ "Conservative",
-      party == "Bloc Québécois" ~ "Bloc Québécois",
-      party == "NPD-Nouveau Parti démocratique" ~ "New Democratic",
-      party == "Parti Vert" ~ "Green",
-      TRUE ~ "Other"
+    party = case_match(
+      party,
+      "Libéral" ~ "Liberal",
+      "Conservateur" ~ "Conservative",
+      "Bloc Québécois" ~ "Bloc Québécois",
+      "NPD-Nouveau Parti démocratique" ~ "New Democratic",
+      "Parti Vert" ~ "Green",
+      .default = "Other"
     )
   )
+```
 
-head(cleaned_elections_data)
+## Graph of 2021 Election
+
+```{r}
+cleaned_elections_data |> 
+  ggplot(aes(x=party)) +
+  geom_bar() +
+  theme_minimal() +
+  labs(x = "Party", y = "Number of seats")
 ```
 
 ## References
@@ -97,4 +119,4 @@ Firke S (2023). \_janitor: Simple Tools for Examining and Cleaning Dirty Data\_.
 
 R Core Team (2023). \_R: A Language and Environment for Statistical Computing\_. R Foundation for Statistical Computing, Vienna, Austria. \<https://www.R-project.org/\>.
 
-Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). \"Welcome to the tidyverse.\" \_Journal of Open Source Software\_, \*4\*(43), 1686. doi:10.21105/joss.01686 \<https://doi.org/10.21105/joss.01686\>.\
+Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R, Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E, Bache SM, Müller K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi K, Vaughan D, Wilke C, Woo K, Yutani H (2019). "Welcome to the tidyverse." \_Journal of Open Source Software\_, \*4\*(43), 1686. doi:10.21105/joss.01686 \<https://doi.org/10.21105/joss.01686\>.\
